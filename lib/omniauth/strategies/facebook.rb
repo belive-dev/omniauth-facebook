@@ -13,7 +13,7 @@ module OmniAuth
 
       option :client_options, {
         site: 'https://graph.facebook.com/v4.0',
-        authorize_url: "https://www.facebook.com/v4.0/dialog/oauth",
+        authorize_url: 'https://www.facebook.com/v4.0/dialog/oauth',
         token_url: 'oauth/access_token'
       }
 
@@ -118,12 +118,12 @@ module OmniAuth
 
       private
 
-      def signed_request_from_cookie
-        @signed_request_from_cookie ||= raw_signed_request_from_cookie && OmniAuth::Facebook::SignedRequest.parse(raw_signed_request_from_cookie, client.secret)
+      def signed_request_from_request
+        @signed_request_from_request ||= raw_signed_request_from_request && OmniAuth::Facebook::SignedRequest.parse(raw_signed_request_from_request, client.secret)
       end
 
-      def raw_signed_request_from_cookie
-        request.cookies["fbsr_#{client.id}"]
+      def raw_signed_request_from_request
+        request.params['signedRequest'] || request.cookies["fbsr_#{client.id}"]
       end
 
       # Picks the authorization code in order, from:
@@ -133,7 +133,7 @@ module OmniAuth
       def with_authorization_code!
         if request.params.key?('code')
           yield
-        elsif code_from_signed_request = signed_request_from_cookie && signed_request_from_cookie['code']
+        elsif code_from_signed_request = signed_request_from_request && signed_request_from_request['code']
           request.params['code'] = code_from_signed_request
           options.authorization_code_from_signed_request_in_cookie = true
           # NOTE The code from the signed fbsr_XXX cookie is set by the FB JS SDK will confirm that the identity of the
